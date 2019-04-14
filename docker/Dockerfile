@@ -1,23 +1,40 @@
-# This is the docker image available. I am using cpu version here. If needed there is gpu version available.
-FROM bvlc/caffe:cpu
+FROM ubuntu:16.04
+LABEL maintainer caffe-maint@googlegroups.com
 
-# Copy the file into docker
-COPY requirements.txt requirements.txt
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        cmake \
+        git \
+        wget \
+        libatlas-base-dev \
+        libboost-all-dev \
+        libgflags-dev \
+        libgoogle-glog-dev \
+        libhdf5-serial-dev \
+        libleveldb-dev \
+        liblmdb-dev \
+        libopencv-dev \
+        libprotobuf-dev \
+        libsnappy-dev \
+        protobuf-compiler \
+        python-dev \
+        python-numpy \
+        python-pip \
+        python-setuptools \
+        python-scipy && \
+    rm -rf /var/lib/apt/lists/*
 
-# Run the copied file
-RUN pip install -r requirements.txt
 
-# create a folder called model1 and copy all the files in the folder into that folder
-ADD . /model1
+ENV CAFFE_ROOT=/opt/caffe
+WORKDIR $CAFFE_ROOT
+COPY caffe/python/requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt && pip install pydot 
 
-# Make model1 your work directory
-WORKDIR /model1
+ENV PYCAFFE_ROOT $CAFFE_ROOT/python
+ENV PYTHONPATH $PYCAFFE_ROOT:$PYTHONPATH
+ENV PATH $CAFFE_ROOT/build/tools:$PYCAFFE_ROOT:$PATH
+RUN echo "$CAFFE_ROOT/build/lib" >> /etc/ld.so.conf.d/caffe.conf && ldconfig
 
-# Create volumes (folders). one (data) to store data and the other(notebooks) to save your code.
-VOLUME ["/model1/data", "/model1/notebooks"]
-
-# Expose your port 8888
-EXPOSE 8888
-
-# Run the following command to give a token(password) to your jupyter notebook.
-CMD jupyter notebook --no-browser --ip=0.0.0.0 --allow-root --NotebookApp.token='demo'
+WORKDIR /ws
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["/bin/bash"]
