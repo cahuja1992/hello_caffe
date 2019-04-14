@@ -1,6 +1,7 @@
 set(name hello_caffe)
 
-add_executable(${name} "${PROJECT_SOURCE_DIR}/app/cpp/main.cpp")
+add_executable(${name} "${PROJECT_SOURCE_DIR}/app/cpp/classifier.cc" 
+                      "${PROJECT_SOURCE_DIR}/app/cpp/main.cc")
 target_link_libraries(${name} ${Caffe_LINK})
 
 set_target_properties(${name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/app/")
